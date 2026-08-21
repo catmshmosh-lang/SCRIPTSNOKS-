@@ -1,0 +1,118 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "NOKS HUB",
+    SubTitle = "All Worlds Instant Win",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "الفرم التلقائي", Icon = "home" })
+}
+
+local Options = Fluent.Options
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local InstantWinEnabled = false
+local Connection = nil
+
+local function GetCharacter()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local function GetHRP()
+    local Char = GetCharacter()
+    return Char and Char:FindFirstChild("HumanoidRootPart")
+end
+
+local function FindEndPart()
+    local Keywords = {"Finish", "WinPad", "Cup", "EndPart", "End", "Win", "Goal", "FinishLine", "Victory", "Trophy"}
+    local BestPart = nil
+    local MaxDistance = -math.huge
+    local HRP = GetHRP()
+    if not HRP then return nil end
+
+    for _, Obj in ipairs(workspace:GetDescendants()) do
+        if Obj:IsA("BasePart") then
+            local NameLower = string.lower(Obj.Name)
+            for _, Key in ipairs(Keywords) do
+                if string.find(NameLower, string.lower(Key)) then
+                    local Dist = (Obj.Position - HRP.Position).Magnitude
+                    if Dist > MaxDistance then
+                        MaxDistance = Dist
+                        BestPart = Obj
+                    end
+                    break
+                end
+            end
+        end
+    end
+    return BestPart
+end
+
+local function StartInstantWin()
+    if Connection then
+        Connection:Disconnect()
+        Connection = nil
+    end
+    Connection = RunService.RenderStepped:Connect(function()
+        if not InstantWinEnabled then return end
+        local HRP = GetHRP()
+        if not HRP then return end
+        local EndPart = FindEndPart()
+        if EndPart then
+            HRP.CFrame = EndPart.CFrame + Vector3.new(0, 3, 0)
+        end
+    end)
+end
+
+local function StopInstantWin()
+    if Connection then
+        Connection:Disconnect()
+        Connection = nil
+    end
+end
+
+Tabs.Main:AddToggle("InstantWin", {
+    Title = "🔥 فوز فوري مستمر لجميع العوالم (Instant Win)",
+    Default = false,
+    Callback = function(Value)
+        InstantWinEnabled = Value
+        if Value then
+            StartInstantWin()
+        else
+            StopInstantWin()
+        end
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if InstantWinEnabled then
+        task.wait(0.5)
+        StartInstantWin()
+    end
+end)
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+InterfaceManager:SetFolder("NOKS_HUB")
+SaveManager:SetFolder("NOKS_HUB")
+InterfaceManager:BuildInterfaceSection(Tabs.Main)
+SaveManager:BuildConfigSection(Tabs.Main)
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "NOKS HUB",
+    Content = "تم التحميل بنجاح - جاهز للاستخدام",
+    Duration = 5
+})
+SaveManager:LoadAutoloadConfig()
