@@ -4,8 +4,8 @@ sg.Parent = game.CoreGui
 sg.ResetOnSpawn = false
 
 local mf = Instance.new("Frame")
-mf.Size = UDim2.new(0, 400, 0, 204)
-mf.Position = UDim2.new(0.5, -200, 0.5, -102)
+mf.Size = UDim2.new(0, 320, 0, 150)
+mf.Position = UDim2.new(0.5, -160, 0.5, -75)
 mf.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mf.Active = true
 mf.Draggable = true
@@ -14,6 +14,9 @@ mf.Parent = sg
 local cRed = Color3.fromRGB(255, 50, 50)
 local cBlue = Color3.fromRGB(50, 100, 255)
 local cPurple = Color3.fromRGB(150, 50, 255)
+local cYellow = Color3.fromRGB(255, 255, 100)
+local cOrange = Color3.fromRGB(255, 120, 0)
+local cGreen = Color3.fromRGB(50, 255, 100)
 
 local function createEl(class, name, text, pos, size, color)
     local el = Instance.new(class)
@@ -22,7 +25,7 @@ local function createEl(class, name, text, pos, size, color)
     el.Size = size
     el.BackgroundColor3 = color
     el.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    el.BorderSizePixel = 4
+    el.BorderSizePixel = 3
     if class == "TextButton" or class == "TextLabel" then
         el.Text = text
         el.Font = Enum.Font.SourceSansBold
@@ -32,33 +35,31 @@ local function createEl(class, name, text, pos, size, color)
     return el
 end
 
-local btnX = createEl("TextButton", "btnX", "X", UDim2.new(0,0, 0,0), UDim2.new(0,100, 0,68), cRed)
-btnX.TextSize = 45
+local btnX = createEl("TextButton", "btnX", "X", UDim2.new(0,0, 0,0), UDim2.new(0,80, 0,50), cRed)
+btnX.TextSize = 30
 
-local btnUp = createEl("TextButton", "btnUp", "أعلى", UDim2.new(0,0, 0,68), UDim2.new(0,100, 0,68), cPurple)
-btnUp.TextSize = 35
+local btnPlus = createEl("TextButton", "btnPlus", "+", UDim2.new(0,80, 0,0), UDim2.new(0,80, 0,50), cPurple)
+btnPlus.TextSize = 35
 
-local btnDown = createEl("TextButton", "btnDown", "أسفل", UDim2.new(0,0, 0,136), UDim2.new(0,100, 0,68), cBlue)
-btnDown.TextSize = 35
-
-local btnMin1 = createEl("TextButton", "btnMin1", "-", UDim2.new(0,100, 0,0), UDim2.new(0,100, 0,68), cBlue)
-btnMin1.TextSize = 60
-
-local btnPlus = createEl("TextButton", "btnPlus", "+", UDim2.new(0,100, 0,68), UDim2.new(0,100, 0,68), cRed)
-btnPlus.TextSize = 50
-
-local btnMin2 = createEl("TextButton", "btnMin2", "-", UDim2.new(0,100, 0,136), UDim2.new(0,100, 0,68), cPurple)
-btnMin2.TextSize = 60
-
-local lblTitle = createEl("TextLabel", "lblTitle", "NOKS", UDim2.new(0,200, 0,0), UDim2.new(0,200, 0,136), cPurple)
-lblTitle.TextSize = 60
+local lblTitle = createEl("TextLabel", "lblTitle", "NOKS", UDim2.new(0,160, 0,0), UDim2.new(0,160, 0,100), cPurple)
+lblTitle.TextSize = 45
 lblTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local lblSpeed = createEl("TextLabel", "lblSpeed", "50", UDim2.new(0,200, 0,136), UDim2.new(0,100, 0,68), cRed)
-lblSpeed.TextSize = 40
+local btnUp = createEl("TextButton", "btnUp", "أعلى", UDim2.new(0,0, 0,50), UDim2.new(0,80, 0,50), cGreen)
+btnUp.TextSize = 22
 
-local btnFly = createEl("TextButton", "btnFly", "طيران", UDim2.new(0,300, 0,136), UDim2.new(0,100, 0,68), cBlue)
-btnFly.TextSize = 35
+local btnMin = createEl("TextButton", "btnMin", "-", UDim2.new(0,80, 0,50), UDim2.new(0,80, 0,50), cBlue)
+btnMin.TextSize = 35
+
+local btnDown = createEl("TextButton", "btnDown", "أسفل", UDim2.new(0,0, 0,100), UDim2.new(0,80, 0,50), cYellow)
+btnDown.TextSize = 22
+
+local lblSpeed = createEl("TextLabel", "lblSpeed", "50", UDim2.new(0,80, 0,100), UDim2.new(0,80, 0,50), cOrange)
+lblSpeed.TextSize = 25
+lblSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local btnFly = createEl("TextButton", "btnFly", "طيران", UDim2.new(0,160, 0,100), UDim2.new(0,160, 0,50), cBlue)
+btnFly.TextSize = 25
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -141,13 +142,16 @@ local function startFly()
         bg.CFrame = cam.CFrame
 
         local moveDir = hum.MoveDirection
-        local moveVec = cam.CFrame:VectorToWorldSpace(cam.CFrame:VectorToObjectSpace(Vector3.new(moveDir.X, 0, moveDir.Z)))
+        local camCFrame = cam.CFrame
+        local moveVec = camCFrame:VectorToWorldSpace(camCFrame:VectorToObjectSpace(Vector3.new(moveDir.X, 0, moveDir.Z)))
 
         local yMove = 0
         if isUpPressed then
             yMove = 1
         elseif isDownPressed then
             yMove = -1
+        else
+            yMove = camCFrame.LookVector.Y * (moveDir.Magnitude > 0 and 1 or 0)
         end
 
         moveVec = moveVec + Vector3.new(0, yMove, 0)
@@ -168,22 +172,16 @@ btnFly.MouseButton1Click:Connect(function()
     end
 end)
 
-local function updateSpeed(amount)
-    flySpeed = flySpeed + amount
-    if flySpeed < 5 then flySpeed = 5 end
-    lblSpeed.Text = tostring(flySpeed)
-end
-
 btnPlus.MouseButton1Click:Connect(function()
-    updateSpeed(5)
+    flySpeed = flySpeed + 1
+    lblSpeed.Text = tostring(flySpeed)
 end)
 
-btnMin1.MouseButton1Click:Connect(function()
-    updateSpeed(-5)
-end)
-
-btnMin2.MouseButton1Click:Connect(function()
-    updateSpeed(-5)
+btnMin.MouseButton1Click:Connect(function()
+    if flySpeed > 1 then
+        flySpeed = flySpeed - 1
+        lblSpeed.Text = tostring(flySpeed)
+    end
 end)
 
 btnX.MouseButton1Click:Connect(function()
