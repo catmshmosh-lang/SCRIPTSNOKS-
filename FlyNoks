@@ -4,69 +4,90 @@ sg.Parent = game.CoreGui
 sg.ResetOnSpawn = false
 
 local mf = Instance.new("Frame")
-mf.Size = UDim2.new(0, 320, 0, 150)
-mf.Position = UDim2.new(0.5, -160, 0.5, -75)
-mf.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mf.Size = UDim2.new(0, 240, 0, 120)
+mf.Position = UDim2.new(0.5, -120, 0.5, -60)
+mf.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
 mf.Active = true
 mf.Draggable = true
 mf.Parent = sg
 
-local cRed = Color3.fromRGB(255, 50, 50)
-local cBlue = Color3.fromRGB(50, 100, 255)
-local cPurple = Color3.fromRGB(150, 50, 255)
-local cYellow = Color3.fromRGB(255, 255, 100)
-local cOrange = Color3.fromRGB(255, 120, 0)
-local cGreen = Color3.fromRGB(50, 255, 100)
+local mainCorner = Instance.new("UICorner", mf)
+mainCorner.CornerRadius = UDim.new(0, 8)
 
-local function createEl(class, name, text, pos, size, color)
+local mainStroke = Instance.new("UIStroke", mf)
+mainStroke.Color = Color3.fromRGB(138, 43, 226)
+mainStroke.Thickness = 2
+
+local function createEl(class, name, text, pos, size, bgColor, textColor, strokeColor)
     local el = Instance.new(class)
     el.Name = name
     el.Position = pos
     el.Size = size
-    el.BackgroundColor3 = color
-    el.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    el.BorderSizePixel = 3
+    el.BackgroundColor3 = bgColor
+    el.BorderSizePixel = 0
+    
+    local corner = Instance.new("UICorner", el)
+    corner.CornerRadius = UDim.new(0, 6)
+    
+    if strokeColor then
+        local stroke = Instance.new("UIStroke", el)
+        stroke.Color = strokeColor
+        stroke.Thickness = 1.5
+    end
+
     if class == "TextButton" or class == "TextLabel" then
         el.Text = text
         el.Font = Enum.Font.SourceSansBold
-        el.TextColor3 = Color3.fromRGB(0, 0, 0)
+        el.TextColor3 = textColor or Color3.fromRGB(255, 255, 255)
     end
     el.Parent = mf
     return el
 end
 
-local btnX = createEl("TextButton", "btnX", "X", UDim2.new(0,0, 0,0), UDim2.new(0,80, 0,50), cRed)
-btnX.TextSize = 30
+local colRed = Color3.fromRGB(40, 15, 20)
+local colPurple = Color3.fromRGB(30, 15, 45)
+local colBlue = Color3.fromRGB(15, 25, 45)
+local colGreen = Color3.fromRGB(15, 35, 25)
+local colYellow = Color3.fromRGB(35, 35, 15)
+local colOrange = Color3.fromRGB(40, 25, 15)
 
-local btnPlus = createEl("TextButton", "btnPlus", "+", UDim2.new(0,80, 0,0), UDim2.new(0,80, 0,50), cPurple)
-btnPlus.TextSize = 35
+local strRed = Color3.fromRGB(255, 70, 70)
+local strPurple = Color3.fromRGB(180, 100, 255)
+local strBlue = Color3.fromRGB(80, 160, 255)
+local strGreen = Color3.fromRGB(80, 255, 130)
+local strYellow = Color3.fromRGB(255, 255, 100)
+local strOrange = Color3.fromRGB(255, 150, 50)
 
-local lblTitle = createEl("TextLabel", "lblTitle", "NOKS", UDim2.new(0,160, 0,0), UDim2.new(0,160, 0,100), cPurple)
-lblTitle.TextSize = 45
-lblTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+local btnX = createEl("TextButton", "btnX", "X", UDim2.new(0,4, 0,4), UDim2.new(0,56, 0,36), colRed, strRed, strRed)
+btnX.TextSize = 20
 
-local btnUp = createEl("TextButton", "btnUp", "أعلى", UDim2.new(0,0, 0,50), UDim2.new(0,80, 0,50), cGreen)
-btnUp.TextSize = 22
+local btnPlus = createEl("TextButton", "btnPlus", "+", UDim2.new(0,62, 0,4), UDim2.new(0,56, 0,36), colPurple, strPurple, strPurple)
+btnPlus.TextSize = 22
 
-local btnMin = createEl("TextButton", "btnMin", "-", UDim2.new(0,80, 0,50), UDim2.new(0,80, 0,50), cBlue)
-btnMin.TextSize = 35
+local lblTitle = createEl("TextLabel", "lblTitle", "NOKS", UDim2.new(0,120, 0,4), UDim2.new(0,116, 0,74), colPurple, Color3.fromRGB(255, 255, 255), strPurple)
+lblTitle.TextSize = 28
 
-local btnDown = createEl("TextButton", "btnDown", "أسفل", UDim2.new(0,0, 0,100), UDim2.new(0,80, 0,50), cYellow)
-btnDown.TextSize = 22
+local btnUp = createEl("TextButton", "btnUp", "أعلى", UDim2.new(0,4, 0,42), UDim2.new(0,56, 0,36), colGreen, strGreen, strGreen)
+btnUp.TextSize = 15
 
-local lblSpeed = createEl("TextLabel", "lblSpeed", "50", UDim2.new(0,80, 0,100), UDim2.new(0,80, 0,50), cOrange)
-lblSpeed.TextSize = 25
-lblSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+local btnMin = createEl("TextButton", "btnMin", "-", UDim2.new(0,62, 0,42), UDim2.new(0,56, 0,36), colBlue, strBlue, strBlue)
+btnMin.TextSize = 22
 
-local btnFly = createEl("TextButton", "btnFly", "طيران", UDim2.new(0,160, 0,100), UDim2.new(0,160, 0,50), cBlue)
-btnFly.TextSize = 25
+local btnDown = createEl("TextButton", "btnDown", "أسفل", UDim2.new(0,4, 0,80), UDim2.new(0,56, 0,36), colYellow, strYellow, strYellow)
+btnDown.TextSize = 15
+
+local lblSpeed = createEl("TextLabel", "lblSpeed", "1", UDim2.new(0,62, 0,80), UDim2.new(0,56, 0,36), colOrange, strOrange, strOrange)
+lblSpeed.TextSize = 16
+
+local btnFly = createEl("TextButton", "btnFly", "طيران", UDim2.new(0,120, 0,80), UDim2.new(0,116, 0,36), colBlue, strBlue, strBlue)
+btnFly.TextSize = 16
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local flying = false
-local flySpeed = 50
+local flySpeed = 1
 local bv = nil
 local bg = nil
 local conn = nil
@@ -110,7 +131,7 @@ local function stopFly()
             hum.PlatformStand = false
         end
     end
-    btnFly.BackgroundColor3 = cBlue
+    btnFly.BackgroundColor3 = colBlue
 end
 
 local function startFly()
@@ -134,7 +155,7 @@ local function startFly()
     bg.CFrame = hrp.CFrame
     bg.Parent = hrp
 
-    btnFly.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+    btnFly.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
 
     conn = RunService.RenderStepped:Connect(function()
         if not flying or not LocalPlayer.Character or not hrp then return end
@@ -157,7 +178,7 @@ local function startFly()
         moveVec = moveVec + Vector3.new(0, yMove, 0)
 
         if moveVec.Magnitude > 0 then
-            bv.Velocity = moveVec.Unit * flySpeed
+            bv.Velocity = moveVec.Unit * (flySpeed * 3)
         else
             bv.Velocity = Vector3.zero
         end
@@ -182,6 +203,11 @@ btnMin.MouseButton1Click:Connect(function()
         flySpeed = flySpeed - 1
         lblSpeed.Text = tostring(flySpeed)
     end
+end)
+
+btnX.MouseButton1Click:Connect(function5)
+    stopFly()
+    sg:Destroy()
 end)
 
 btnX.MouseButton1Click:Connect(function()
