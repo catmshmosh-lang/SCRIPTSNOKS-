@@ -1,0 +1,192 @@
+local sg = Instance.new("ScreenGui")
+sg.Name = "NoksFlyGui"
+sg.Parent = game.CoreGui
+sg.ResetOnSpawn = false
+
+local mf = Instance.new("Frame")
+mf.Size = UDim2.new(0, 400, 0, 204)
+mf.Position = UDim2.new(0.5, -200, 0.5, -102)
+mf.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mf.Active = true
+mf.Draggable = true
+mf.Parent = sg
+
+local cRed = Color3.fromRGB(255, 50, 50)
+local cBlue = Color3.fromRGB(50, 100, 255)
+local cPurple = Color3.fromRGB(150, 50, 255)
+
+local function createEl(class, name, text, pos, size, color)
+    local el = Instance.new(class)
+    el.Name = name
+    el.Position = pos
+    el.Size = size
+    el.BackgroundColor3 = color
+    el.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    el.BorderSizePixel = 4
+    if class == "TextButton" or class == "TextLabel" then
+        el.Text = text
+        el.Font = Enum.Font.SourceSansBold
+        el.TextColor3 = Color3.fromRGB(0, 0, 0)
+    end
+    el.Parent = mf
+    return el
+end
+
+local btnX = createEl("TextButton", "btnX", "X", UDim2.new(0,0, 0,0), UDim2.new(0,100, 0,68), cRed)
+btnX.TextSize = 45
+
+local btnUp = createEl("TextButton", "btnUp", "أعلى", UDim2.new(0,0, 0,68), UDim2.new(0,100, 0,68), cPurple)
+btnUp.TextSize = 35
+
+local btnDown = createEl("TextButton", "btnDown", "أسفل", UDim2.new(0,0, 0,136), UDim2.new(0,100, 0,68), cBlue)
+btnDown.TextSize = 35
+
+local btnMin1 = createEl("TextButton", "btnMin1", "-", UDim2.new(0,100, 0,0), UDim2.new(0,100, 0,68), cBlue)
+btnMin1.TextSize = 60
+
+local btnPlus = createEl("TextButton", "btnPlus", "+", UDim2.new(0,100, 0,68), UDim2.new(0,100, 0,68), cRed)
+btnPlus.TextSize = 50
+
+local btnMin2 = createEl("TextButton", "btnMin2", "-", UDim2.new(0,100, 0,136), UDim2.new(0,100, 0,68), cPurple)
+btnMin2.TextSize = 60
+
+local lblTitle = createEl("TextLabel", "lblTitle", "NOKS", UDim2.new(0,200, 0,0), UDim2.new(0,200, 0,136), cPurple)
+lblTitle.TextSize = 60
+lblTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local lblSpeed = createEl("TextLabel", "lblSpeed", "50", UDim2.new(0,200, 0,136), UDim2.new(0,100, 0,68), cRed)
+lblSpeed.TextSize = 40
+
+local btnFly = createEl("TextButton", "btnFly", "طيران", UDim2.new(0,300, 0,136), UDim2.new(0,100, 0,68), cBlue)
+btnFly.TextSize = 35
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local flying = false
+local flySpeed = 50
+local bv = nil
+local bg = nil
+local conn = nil
+
+local isUpPressed = false
+local isDownPressed = false
+
+local function handleInput(btn, isUp)
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if isUp then isUpPressed = true else isDownPressed = true end
+        end
+    end)
+    btn.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if isUp then isUpPressed = false else isDownPressed = false end
+        end
+    end)
+end
+
+handleInput(btnUp, true)
+handleInput(btnDown, false)
+
+local function stopFly()
+    flying = false
+    if conn then
+        conn:Disconnect()
+        conn = nil
+    end
+    if bv then
+        bv:Destroy()
+        bv = nil
+    end
+    if bg then
+        bg:Destroy()
+        bg = nil
+    end
+    if LocalPlayer.Character then
+        local hum = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        if hum then
+            hum.PlatformStand = false
+        end
+    end
+    btnFly.BackgroundColor3 = cBlue
+end
+
+local function startFly()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if not hrp or not hum then return end
+
+    flying = true
+    hum.PlatformStand = true
+
+    bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bv.Velocity = Vector3.zero
+    bv.Parent = hrp
+
+    bg = Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+    bg.P = 90000
+    bg.CFrame = hrp.CFrame
+    bg.Parent = hrp
+
+    btnFly.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+
+    conn = RunService.RenderStepped:Connect(function()
+        if not flying or not LocalPlayer.Character or not hrp then return end
+        local cam = workspace.CurrentCamera
+        bg.CFrame = cam.CFrame
+
+        local moveDir = hum.MoveDirection
+        local moveVec = cam.CFrame:VectorToWorldSpace(cam.CFrame:VectorToObjectSpace(Vector3.new(moveDir.X, 0, moveDir.Z)))
+
+        local yMove = 0
+        if isUpPressed then
+            yMove = 1
+        elseif isDownPressed then
+            yMove = -1
+        end
+
+        moveVec = moveVec + Vector3.new(0, yMove, 0)
+
+        if moveVec.Magnitude > 0 then
+            bv.Velocity = moveVec.Unit * flySpeed
+        else
+            bv.Velocity = Vector3.zero
+        end
+    end)
+end
+
+btnFly.MouseButton1Click:Connect(function()
+    if flying then
+        stopFly()
+    else
+        startFly()
+    end
+end)
+
+local function updateSpeed(amount)
+    flySpeed = flySpeed + amount
+    if flySpeed < 5 then flySpeed = 5 end
+    lblSpeed.Text = tostring(flySpeed)
+end
+
+btnPlus.MouseButton1Click:Connect(function()
+    updateSpeed(5)
+end)
+
+btnMin1.MouseButton1Click:Connect(function()
+    updateSpeed(-5)
+end)
+
+btnMin2.MouseButton1Click:Connect(function()
+    updateSpeed(-5)
+end)
+
+btnX.MouseButton1Click:Connect(function()
+    stopFly()
+    sg:Destroy()
+end)
