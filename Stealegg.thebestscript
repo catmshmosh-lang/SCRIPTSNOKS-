@@ -1,0 +1,173 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "⚡ NOKS",
+   LoadingTitle = "NOKS",
+   LoadingSubtitle = "تم صنعه بالذكاء الأصطناعي",
+   ConfigurationSaving = { Enabled = false }
+})
+
+local Player = game.Players.LocalPlayer
+local SafeZonePos = nil
+local AutoSnipe = false
+local AutoSteal = false
+local ESPEnabled = false
+
+local RareKeywords = {"secret", "godly", "mythic", "void", "cosmic", "legendary", "سيكرت", "خرافي", "اسطوري", "المظلم"}
+
+local function GetRoot()
+    return Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+end
+
+local function IsSecret(name)
+    local lower = name:lower()
+    for _, word in ipairs(RareKeywords) do
+        if lower:find(word) then return true end
+    end
+    return false
+end
+
+local MainTab = Window:CreateTab("الرئيسية", 4483345998)
+local VisualsTab = Window:CreateTab("الرؤية", 4483345998)
+local PlayerTab = Window:CreateTab("اللاعب", 4483345998)
+
+MainTab:CreateButton({
+   Name = "حفظ موقع الأمان (Safezone)",
+   Callback = function()
+      local root = GetRoot()
+      if root then
+         SafeZonePos = root.CFrame
+         Rayfield:Notify({Title = "NOKS", Content = "تم حفظ موقع الأمان!", Duration = 2})
+      end
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "صياد البيض السري (Instant Teleport)",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoSnipe = Value
+      task.spawn(function()
+         while AutoSnipe do
+            pcall(function()
+               local root = GetRoot()
+               if not root then return end
+               for _, obj in pairs(workspace:GetDescendants()) do
+                  if not AutoSnipe then break end
+                  if (obj:IsA("Model") or obj:IsA("BasePart")) and IsSecret(obj.Name) then
+                     local eggPos = obj:IsA("Model") and (obj.PrimaryPart and obj.PrimaryPart.Position or obj:GetPivot().Position) or obj.Position
+                     local oldCFrame = root.CFrame
+                     root.CFrame = CFrame.new(eggPos + Vector3.new(0, 3, 0))
+                     task.wait(0.05)
+                     local touch = obj:FindFirstChildOfClass("TouchTransmitter") or obj:FindFirstChild("TouchTransmitter", true)
+                     if touch then
+                        firetouchinterest(root, touch.Parent, 0)
+                        firetouchinterest(root, touch.Parent, 1)
+                     end
+                     task.wait(0.05)
+                     if SafeZonePos then
+                        root.CFrame = SafeZonePos
+                     else
+                        root.CFrame = oldCFrame
+                     end
+                     task.wait(0.1)
+                  end
+               end
+            end)
+            task.wait(0.2)
+         end
+      end)
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "تجميع البيض التلقائي (Auto Farm)",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoSteal = Value
+      task.spawn(function()
+         while AutoSteal do
+            pcall(function()
+               local root = GetRoot()
+               if not root then return end
+               for _, obj in pairs(workspace:GetDescendants()) do
+                  if not AutoSteal then break end
+                  if obj:IsA("TouchTransmitter") and (obj.Parent.Name:lower():find("egg") or obj.Parent.Name:lower():find("بيض")) then
+                     firetouchinterest(root, obj.Parent, 0)
+                     firetouchinterest(root, obj.Parent, 1)
+                  end
+               end
+            end)
+            task.wait(0.3)
+         end
+      end)
+   end,
+})
+
+VisualsTab:CreateToggle({
+   Name = "توهج البيض النادر (ESP)",
+   CurrentValue = false,
+   Callback = function(Value)
+      ESPEnabled = Value
+      task.spawn(function()
+         while ESPEnabled do
+            for _, obj in pairs(workspace:GetDescendants()) do
+               if (obj:IsA("Model") or obj:IsA("BasePart")) and IsSecret(obj.Name) then
+                  if not obj:FindFirstChild("NOKS_ESP") then
+                     local hl = Instance.new("Highlight")
+                     hl.Name = "NOKS_ESP"
+                     hl.FillColor = Color3.fromRGB(255, 0, 0)
+                     hl.OutlineColor = Color3.fromRGB(255, 215, 0)
+                     hl.FillTransparency = 0.2
+                     hl.Parent = obj
+                  end
+               end
+            end
+            task.wait(1)
+         end
+         if not ESPEnabled then
+            for _, obj in pairs(workspace:GetDescendants()) do
+               if obj:FindFirstChild("NOKS_ESP") then
+                  obj.NOKS_ESP:Destroy()
+               end
+            end
+         end
+      end)
+   end,
+})
+
+PlayerTab:CreateSlider({
+   Name = "السرعة الفائقة",
+   Range = {16, 500},
+   Increment = 5,
+   CurrentValue = 16,
+   Callback = function(Value)
+      if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+         Player.Character.Humanoid.WalkSpeed = Value
+      end
+   end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "اختراق الجدران (Noclip)",
+   CurrentValue = false,
+   Callback = function(Value)
+      local Stepped = game:GetService("RunService").Stepped
+      if Value then
+         _G.NoclipLoop = Stepped:Connect(function()
+            if Player.Character then
+               for _, part in pairs(Player.Character:GetChildren()) do
+                  if part:IsA("BasePart") then part.CanCollide = false end
+               end
+            end
+         end)
+      else
+         if _G.NoclipLoop then _G.NoclipLoop:Disconnect() end
+      end
+   end,
+})
+
+MainTab:CreateParagraph({
+   Title = "NOKS",
+   Content = "تم صنعه بالذكاء الأصطناعي"
+})
