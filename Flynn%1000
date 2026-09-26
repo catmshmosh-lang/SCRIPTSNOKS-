@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
+local plr = Players.LocalPlayer
+local cam = workspace.CurrentCamera
+
+local char = plr.Character or plr.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
+
+StarterGui:SetCore("SendNotification", {
+    Title = "NOKS Hub",
+    Text = "NOKS Fly Activated! Press Jump to Disable.",
+    Duration = 3
+})
+
+local pos = Instance.new("BodyPosition")
+local gyro = Instance.new("BodyGyro")
+
+pos.Position = root.Position
+pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+pos.P = 100000
+pos.D = 1750
+pos.Parent = root
+
+gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+gyro.P = 100000
+gyro.D = 2200
+gyro.CFrame = root.CFrame
+gyro.Parent = root
+
+humanoid.PlatformStand = true
+
+local speed = 2 
+
+local heartbeatEvent
+local noclipEvent
+
+heartbeatEvent = RunService.Heartbeat:Connect(function()
+    if not char or not char:Parent or humanoid.Health <= 0 then
+        if heartbeatEvent then heartbeatEvent:Disconnect() end
+        if noclipEvent then noclipEvent:Disconnect() end
+        return
+    end
+
+    local moveDirection = humanoid.MoveDirection
+    local camCFrame = cam.CFrame
+    
+    if moveDirection.Magnitude > 0 then
+        local direction = camCFrame:VectorToWorldSpace(camCFrame:VectorToObjectSpace(moveDirection))
+        pos.Position = pos.Position + (direction * speed)
+    end
+    
+    gyro.CFrame = camCFrame
+    humanoid.PlatformStand = true
+end)
+
+noclipEvent = RunService.Stepped:Connect(function()
+    if char and char:Parent then
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+local jumpEvent
+jumpEvent = UserInputService.JumpRequest:Connect(function()
+    if heartbeatEvent then heartbeatEvent:Disconnect() end
+    if noclipEvent then noclipEvent:Disconnect() end
+    if jumpEvent then jumpEvent:Disconnect() end
+
+    pos:Destroy()
+    gyro:Destroy()
+    humanoid.PlatformStand = false
+
+    StarterGui:SetCore("SendNotification", {
+        Title = "NOKS Hub",
+        Text = "NOKS Fly Deactivated.",
+        Duration = 2
+    })
+end)
